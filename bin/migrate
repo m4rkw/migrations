@@ -1,0 +1,319 @@
+#!/usr/bin/ruby
+
+require 'migrations'
+
+class MigrationCommand
+  def initialize(args)
+    if args.empty?
+      usage
+    end
+
+    @prompt = true
+
+    if respond_to? args[0]
+      method = args.shift
+
+      if args[args.length-1] == '-y'
+        @prompt = false
+        args.pop
+      end
+
+      if args.empty?
+        send method
+      else
+        send method, *args
+      end
+    else
+      usage
+    end
+  end
+
+  def usage
+    puts "\nMigrations for ruby by m4rkw - https://github.com/m4rkw/migration\n\n"
+    puts "Usage:\n\n"
+
+    format(
+      'migrate list' => 'list all migrations',
+      'migrate up [-y]' => 'run all pending migrations',
+      'migrate up <n> [-y]' => 'run <n> pending migrations',
+      'migrate down [-y]' => 'revert previous migration',
+      'migrate down <n> [-y]' => 'revert previous <n> migrations',
+      'migrate down all [-y]' => 'revert all previous migrations',
+      'migrate to <version> [-y]' => 'migrate up or down to a specific version',
+      'migrate add <name> [-y]' => 'generate a new migration class',
+      'migrate set <version || "none"> [-y]' => 'set the migrated version without running any migrations',
+      'migrate apply <version> [-y]' => 'apply a specific migration without updating the version',
+      'migrate revert <version> [-y]' => 'revert a specific migration without updating the version'
+    )
+    puts "\n"
+    exit
+  end
+
+  def format(keys)
+    width = (keys.keys.max do |a,b| a.length <=> b.length end).length + 2
+
+    keys.each do |key, value|
+      puts "#{key.ljust(width,' ')}: #{value}"
+    end
+  end
+
+  def format_table(list)
+    widths = {}
+    total = 0
+
+    list[0].keys.each do |key|
+      widths[key] = key.length
+      list.each do |item|
+        if table_value(item[key]).length > widths[key]
+          widths[key] = table_value(item[key]).length
+        end
+      end
+      total += widths[key]
+    end
+
+    table_spacer(widths)
+
+    list[0].keys.each do |key|
+      print "| #{key.to_s.rjust(widths[key],' ')} "
+    end
+
+    puts "|"
+
+    table_spacer(widths)
+
+    list.each do |item|
+      item.each do |key,value|
+        print "| #{table_value(value).rjust(widths[key],' ')} "
+      end
+      puts "|"
+    end
+
+    table_spacer(widths)
+  end
+
+  def table_spacer(widths)
+    widths.each do |key, width|
+      print "+-" + ("-" * width) + "-"
+    end
+    puts "+"
+  end
+
+  def table_value(value)
+    if !!value == value
+      return value ? 'yes' : 'no'
+    end
+    if value.is_a?(Time)
+      return value.strftime('%Y-%m-%d %H:%M:%S')
+    end
+
+    value
+  end
+
+  def list
+    m = Migrations.new
+
+    list = m.list
+
+    if list.empty?
+      puts "\nNo migrations found.\n\n"
+    else
+      puts "\n"
+      format_table(list)
+      puts "\n"
+    end
+  end
+
+  def prompt_continue
+    print "\nContinue? [y/N] "
+    input = STDIN.gets.strip
+
+    if input[0].downcase != 'y'
+      puts "Aborting.\n"
+      exit
+    end
+  end
+
+  def list_migrations(title, versions)
+    puts "\n#{title}\n\n"
+
+    versions.each do |version|
+      puts version
+    end
+  end
+
+  def up(n=nil)
+    m = Migrations.new
+
+    pending = m.pending(n)
+
+    if pending.empty?
+      puts "\nNo migrations pending.\n\n"
+    else
+      if @prompt
+        list_migrations "Migrations pending:",pending
+        prompt_continue
+      end
+
+      puts "\n"
+      m.up(n)
+      puts "\n"
+    end
+  end
+
+  def down(n=nil)
+    if n.nil?
+      n = 1
+    elsif n == 'all'
+      n = nil
+    end
+
+    m = Migrations.new
+
+    applied = m.applied(n)
+
+    if applied.empty?
+      puts "\nNo migrations applied.\n\n"
+    else
+      if @prompt
+        list_migrations "Migrations to roll back:",applied
+        prompt_continue
+      end
+
+      puts "\n"
+      m.down(n)
+      puts "\n"
+    end
+  end
+
+  def add(name)
+    name = name.gsub(/[^a-zA-Z0-9_]+/,'')
+
+    m = Migrations.new
+
+    puts "\n"
+    m.generate(name)
+    puts "\n"
+  end
+
+  def to(version)
+    m = Migrations.new
+
+    pending = m.pending
+
+    if pending.include? version
+      to_apply = []
+
+      pending.each do |pending_version|
+        to_apply.push pending_version
+
+        if pending_version == version
+          break
+        end
+      end
+
+      if to_apply.empty?
+        puts "\nNothing to do, we are already at that version.\n\n"
+        return
+      end
+
+      if @prompt
+        list_migrations "Migrations to apply:", to_apply
+        prompt_continue
+      end
+
+      puts "\n"
+      to_apply.each do |version|
+        m.apply version
+      end
+      puts "\n"
+      return
+
+    else
+      applied = m.applied
+
+      if applied.include? version
+        if applied[0] == version
+          puts "\nNothing to do, we are already at that version.\n\n"
+          return
+        end
+        to_revert = []
+        applied.each do |applied_version|
+          if applied_version == version
+            break
+          end
+          to_revert.push applied_version
+        end
+
+        if @prompt
+          list_migrations "Migrations to roll back:", to_revert
+          prompt_continue
+        end
+
+        puts "\n"
+        to_revert.each do |version|
+          m.revert version
+        end
+        puts "\n"
+        return
+      end
+    end
+
+   puts "\nVersion not found.\n\n"
+  end
+
+  def set(version)
+    m = Migrations.new
+
+    pending = m.pending
+
+    if pending.include? version
+      pending.each do |pending_version|
+        m.insert pending_version
+
+        if pending_version == version
+          break
+        end
+      end
+
+      puts "\nVersion has been set to: #{version}\n\n"
+      return
+    else
+      applied = m.applied
+
+      if applied.first == version
+        puts "\nNothing to do, we are already at version: #{version}\n\n"
+        return
+      end
+
+      if (applied.include?(version) || version == "none")
+        applied.each do |applied_version|
+          if applied_version == version
+            break
+          end
+          m.remove applied_version
+        end
+
+        if version == "none"
+          puts "\nVersion has been set to (none)\n\n"
+        else
+          puts "\nVersion has been set to: #{version}\n\n"
+        end
+        return
+      end
+    end
+
+    puts "\nVersion #{version} was not found.\n\n"
+  end
+
+  def apply(version)
+    m = Migrations.new
+    m.apply(version,false)
+  end
+
+  def revert(version)
+    m = Migrations.new
+    m.revert(version,false)
+  end
+end
+
+MigrationCommand.new(ARGV)

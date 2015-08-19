@@ -1,0 +1,10 @@
+
+{
+  :db => {
+    :type => 'mysql',
+    :host => 'localhost',
+    :name => '',
+    :user => '',
+    :pass => ''
+  }
+}
