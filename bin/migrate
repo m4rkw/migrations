@@ -4,19 +4,19 @@ require 'migrations'
 
 class MigrationCommand
   def initialize(args)
-    if args.empty?
-      usage
+    @prompt = true
+
+    for i in 0...args.length
+      if args[i] == '-y'
+        @prompt = false
+        args.delete_at(i)
+      end
     end
 
-    @prompt = true
+    args.empty? and usage
 
     if respond_to? args[0]
       method = args.shift
-
-      if args[args.length-1] == '-y'
-        @prompt = false
-        args.pop
-      end
 
       if args.empty?
         send method
@@ -34,16 +34,16 @@ class MigrationCommand
 
     format(
       'migrate list' => 'list all migrations',
-      'migrate up [-y]' => 'run all pending migrations',
-      'migrate up <n> [-y]' => 'run <n> pending migrations',
-      'migrate down [-y]' => 'revert previous migration',
-      'migrate down <n> [-y]' => 'revert previous <n> migrations',
-      'migrate down all [-y]' => 'revert all previous migrations',
-      'migrate to <version> [-y]' => 'migrate up or down to a specific version',
-      'migrate add <name> [-y]' => 'generate a new migration class',
-      'migrate set <version || "none"> [-y]' => 'set the migrated version without running any migrations',
-      'migrate apply <version> [-y]' => 'apply a specific migration without updating the version',
-      'migrate revert <version> [-y]' => 'revert a specific migration without updating the version'
+      'migrate [-y] up' => 'run all pending migrations',
+      'migrate [-y] up <n>' => 'run <n> pending migrations',
+      'migrate [-y] down' => 'revert previous migration',
+      'migrate [-y] down <n>' => 'revert previous <n> migrations',
+      'migrate [-y] down all' => 'revert all previous migrations',
+      'migrate [-y] to <version>' => 'migrate up or down to a specific version',
+      'migrate [-y] add <name>' => 'generate a new migration class',
+      'migrate [-y] set <version || "none">' => 'set the migrated version without running any migrations',
+      'migrate [-y] apply <version>' => 'apply a specific migration without updating the version',
+      'migrate [-y] revert <version>' => 'revert a specific migration without updating the version'
     )
     puts "\n"
     exit
