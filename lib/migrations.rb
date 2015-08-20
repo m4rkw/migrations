@@ -43,7 +43,7 @@ class Migrations
     @db[:migration].each do |migration|
       database[migration[:version]] = migration[:applied_at]
       if !all.include? migration[:version]
-        all.push migration
+        all.push migration[:version]
       end
     end
 

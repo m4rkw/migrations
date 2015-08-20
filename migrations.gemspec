@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'migrations'
-  s.version     = '1.0.0'
+  s.version     = '1.0.1'
   s.date        = '2015-08-20'
   s.summary     = "Migrations"
   s.description = "Ruby database migration library"
