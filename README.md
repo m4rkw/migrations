@@ -12,6 +12,7 @@ Version history
 - 1.0.1 - Bugfix (typo :|)
 - 1.0.2 - Added ability for -y to be in any part of the arguments, eg: migrate -y up  - this is so that
 one can add a shell alias to always -y, eg:  alias mi="migrate -y"
+- 1.0.3 - Minor bugfixes
 
 
 Installation

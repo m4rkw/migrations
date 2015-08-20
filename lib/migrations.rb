@@ -17,6 +17,10 @@ class Migrations
         config[key] = value
       end
 
+      if !config[:db]
+        raise "Database connection is not defined in config.rb"
+      end
+
       @db = Sequel.connect("#{config[:db][:type]}://#{config[:db][:user]}:#{config[:db][:pass]}@#{config[:db][:host]}/#{config[:db][:name]}")
     else
       raise "#{config_file} was not found and no database handle was passed to us."
