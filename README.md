@@ -8,9 +8,9 @@ database communication.  It's designed to be simple and powerful.
 Version history
 ---------------
 
-1.0.0 - Initial release
-1.0.1 - Bugfix (typo :|)
-1.0.2 - Added ability for -y to be in any part of the arguments, eg: migrate -y up  - this is so that
+- 1.0.0 - Initial release
+- 1.0.1 - Bugfix (typo :|)
+- 1.0.2 - Added ability for -y to be in any part of the arguments, eg: migrate -y up  - this is so that
 one can add a shell alias to always -y, eg:  alias mi="migrate -y"
 
 
