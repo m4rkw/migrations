@@ -21,7 +21,7 @@ class Migrations
         raise "Database connection is not defined in config.rb"
       end
 
-      @db = Sequel.connect("#{config[:db][:type]}://#{config[:db][:user]}:#{config[:db][:pass]}@#{config[:db][:host]}/#{config[:db][:name]}")
+      @db = Sequel.connect("#{config[:db][:adapter]}://#{config[:db][:user]}:#{config[:db][:password]}@#{config[:db][:host]}/#{config[:db][:database]}")
     else
       raise "#{config_file} was not found and no database handle was passed to us."
     end
