@@ -144,7 +144,7 @@ end
           DateTime :applied_at
         end
       else
-        raise Sequel::DatabaseError e
+        raise e
       end
     end
   end

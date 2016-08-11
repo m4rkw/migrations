@@ -1,7 +1,7 @@
 
 {
   :db => {
-    :type => 'mysql',
+    :adapter => 'mysql',
     :host => 'localhost',
     :name => '',
     :user => '',
