@@ -15,6 +15,7 @@ one can add a shell alias to always -y, eg:  alias mi="migrate -y"
 - 1.0.3 - Minor bugfixes
 - 1.0.4 - Changed config file format for consistency
 - 1.0.5 - Minor bugfixes
+- 1.0.6 - Pretty major bugfix :D
 
 
 Installation

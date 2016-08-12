@@ -1,3 +1,2 @@
 *.gem
 config/config.rb
-migrations/
