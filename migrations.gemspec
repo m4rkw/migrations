@@ -1,7 +1,7 @@
 Gem::Specification.new do |s|
   s.name        = 'migrations'
-  s.version     = '1.0.6'
-  s.date        = '2016-08-12'
+  s.version     = '1.0.7'
+  s.date        = '2017-12-20'
   s.summary     = "Migrations"
   s.description = "Ruby database migration library"
   s.authors     = ["m4rkw"]

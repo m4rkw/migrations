@@ -140,7 +140,7 @@ end
       if e.message.match /Table .*? doesn\'t exist/
         @db.create_table :migration do
           primary_key :id
-          String :version, :unique => true, :null => false
+          String :version, :null => false
           DateTime :applied_at
         end
       else
